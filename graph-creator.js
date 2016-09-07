@@ -121,7 +121,12 @@ class GraphCreator {
 
   removeConnectionsOf(effect) {
     let connectionsRemoved = this.connections.filter(
-      connection => connection.source === effect || connection.target === effect
+      connection => {
+        const source = Effect.effectOfPort(d3.select(connection.source));
+        const target = Effect.effectOfPort(d3.select(connection.target));
+
+        return source === effect || target === effect;
+      }
     );
 
     connectionsRemoved.map(connection => this.removeConnection(connection));
