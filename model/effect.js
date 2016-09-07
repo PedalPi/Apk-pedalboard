@@ -26,5 +26,3 @@ class Effect {
     return d3.select(portElement.node().parentElement.parentElement).data()[0];
   }
 }
-
-Node.SELECTED_CLASS = 'selected'

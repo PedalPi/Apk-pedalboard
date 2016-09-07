@@ -1,11 +1,11 @@
 class ConnectionDrawer {
   draw(elements, selectedConnection) {
-    // update existing paths
+    // update existing connections
     elements.style('marker-end', 'url(#end-arrow)')
-      .classed(Node.SELECTED_CLASS, d => d === selectedConnection)
+      .classed("selected", d => d === selectedConnection)
       .attr("d", connection => this.resize(connection));
 
-    // add new paths
+    // add new connection
     const newElements = this.drawIn(elements.enter())
 
     // remove old links

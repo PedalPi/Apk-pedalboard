@@ -82,22 +82,16 @@ class PortDrawerOutput extends PortDrawer {
   }
 
   drag(element, port) {
-    const mouse = d3.mouse(this.graph.svgG.node());
-
-    const mousePosition = {
-      x: mouse[0],
-      y: mouse[1]
-    }
     const elementPosition = PortDrawer.positionOfPortElement(element);
 
-    this.graph.edgeConnector.drawTo(elementPosition, mousePosition);
+    this.graph.edgeConnector.drawTo(elementPosition, this.graph.mousePosition);
   }
 
   /** Based in http://jsfiddle.net/AkPN2/5/ */
   dragEnd(originElement, originNode) {
     this.graph.endConnecting();
 
-    const mouseCirclePosition = this.generateCirclePositionByMouse(d3.mouse(this.graph.svgG.node()));
+    const mouseCirclePosition = this.generateCirclePositionByMouse(this.graph.mousePosition);
 
     const destinationElement = this.getPortColidedWith(mouseCirclePosition);
 
@@ -117,8 +111,8 @@ class PortDrawerOutput extends PortDrawer {
     }
   }
 
-  generateCirclePositionByMouse(mouse) {
-    return this.generateCirclePosition(mouse[0], mouse[1], 1);
+  generateCirclePositionByMouse(mousePosition) {
+    return this.generateCirclePosition(mousePosition.x, mousePosition.y, 1);
   }
 
   generateCirclePositionByElement(element) {
