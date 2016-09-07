@@ -14,15 +14,6 @@ class Effect {
     this.y += event.dy;
   }
 
-  mouseOver(element) {
-    if (this.graph.hasRequestCreationConnection())
-      element.classed(Node.CONNECT_CLASS, true);
-  }
-
-  mouseOut(element) {
-    element.classed(Node.CONNECT_CLASS, false);
-  }
-
   get input() {
     return this.data.ports.audio.input;
   }
@@ -30,7 +21,10 @@ class Effect {
   get output() {
     return this.data.ports.audio.output;
   }
+
+  static effectOfPort(portElement) {
+    return d3.select(portElement.node().parentElement.parentElement).data()[0];
+  }
 }
 
-Node.CONNECT_CLASS = 'connect-node';
 Node.SELECTED_CLASS = 'selected'

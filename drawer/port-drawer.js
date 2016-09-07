@@ -10,21 +10,13 @@ class PortDrawer {
   drawIn(container) {
     const self = this;
 
-    container.selectAll("circle")
+    return container.selectAll("circle")
       .data(effect => this.filterPorts(effect))
       .enter()
       .append("circle")
       .attr("r", PortDrawer.RADIUS)
       .attr("cx", (data, index) => this.x(index))
       .attr("cy", (data, index) => this.y(index))
-
-      .on("mousedown", function(node) { self.mouseDown(d3.select(this), node)} )
-      .on("touchstart", function(node) { self.mouseDown(d3.select(this), node)} )
-
-      .on("click", function(node) { console.log('clicked'); self.mouseUp(d3.select(this), node); })
-      .on("touchend", function(node) { self.touchEnd(d3.select(this), node); })
-
-      .call(this.generateDragBehavior())
   }
 
   filterPorts() {}
@@ -36,92 +28,6 @@ class PortDrawer {
     const elementSize = 2*PortDrawer.RADIUS + 2*PortDrawer.PADDING;
 
     return index*elementSize + startPosition;
-  }
-
-  generateDragBehavior() {
-    const self = this;
-
-    return d3.drag()
-      .on("drag", function(port) { self.drag(d3.select(this), port) })
-      .on("end", function(port) { self.dragEnd(d3.select(this), port) });
-  }
-
-  drag(element, port) {
-    const mouse = d3.mouse(this.graph.svgG.node());
-
-    const mousePosition = {
-      x: mouse[0],
-      y: mouse[1]
-    }
-    const elementPosition = PortDrawer.positionOfPortElement(element);
-
-    this.graph.edgeConnector.drawTo(elementPosition, mousePosition);
-  }
-
-  dragEnd(elementOrigin, nodeOrigin) {
-    this.graph.edgeConnector.hide();
-    this.touchEnd(elementOrigin, nodeOrigin);
-  }
-
-  mouseDown(element, port) {
-    this.graph.currentState.connectionPortElementOrigin = element.node();
-
-    const position = PortDrawer.positionOfPortElement(element);
-
-    this.graph.edgeConnector.drawToPoint(position);
-    d3.event.stopPropagation();
-  }
-
-  mouseUp(element, port) {
-    if (this.graph.hasRequestCreationConnection()) {
-      const origin = this.graph.currentState.connectionPortElementOrigin;
-      const destination = element.node();
-
-      if (origin !== destination)
-        this.graph.createConnection(origin, destination);
-    }
-
-    this.graph.currentState.connectionPortElementOrigin = null;
-  }
-
-  touchEnd(originElement, originNode) {
-    // Based in http://jsfiddle.net/AkPN2/5/
-    const mouse = d3.mouse(this.graph.svgG.node());
-
-    const detectorInputPort = {
-      cx: mouse[0],
-      cy: mouse[1],
-      r: 50
-    }
-
-    const self = this;
-    const inputPorts = this.graph.svgG.selectAll('circle');
-    inputPorts.each(function(port) {
-      self.detectColision(this, port, detectorInputPort)
-    });
-  }
-
-  detectColision(element, port, detectorInputPort) {
-    const d3Element = d3.select(element);
-    const position = PortDrawer.positionOfPortElement(d3Element);
-
-    const portCircleDetectable = {
-      cx: position.x,
-      cy: position.y,
-      r: element.getAttribute("r")
-    };
-
-    if (this.circleOverlapQ(detectorInputPort, portCircleDetectable))
-      this.mouseUp(d3Element, port);
-  }
-
-  circleOverlapQ(c1, c2) {
-    let distance = Math.sqrt(
-      Math.pow(parseInt(c2.cx) - parseInt(c1.cx), 2) +
-      Math.pow(parseInt(c2.cy) - parseInt(c1.cy), 2)
-    );
-
-    return distance < (parseInt(c1.r) + parseInt(c2.r));
   }
 
   static positionOfPortElement(element) {
@@ -152,5 +58,84 @@ class PortDrawerOutput extends PortDrawer {
 
   x(index) {
     return this.effectSize.width/2;
+  }
+
+  drawIn(container) {
+    return super.drawIn(container)
+      .call(this.generateDragBehavior());
+  }
+
+  generateDragBehavior() {
+    const self = this;
+
+    return d3.drag()
+      .on("start", function(port) { self.dragStart(d3.select(this)) })
+      .on("drag", function(port) { self.drag(d3.select(this), port) })
+      .on("end", function(port) { self.dragEnd(d3.select(this), port) });
+  }
+
+  dragStart(element) {
+    this.graph.startConnecting();
+
+    const position = PortDrawer.positionOfPortElement(element);
+    this.graph.edgeConnector.drawToPoint(position);
+  }
+
+  drag(element, port) {
+    const mouse = d3.mouse(this.graph.svgG.node());
+
+    const mousePosition = {
+      x: mouse[0],
+      y: mouse[1]
+    }
+    const elementPosition = PortDrawer.positionOfPortElement(element);
+
+    this.graph.edgeConnector.drawTo(elementPosition, mousePosition);
+  }
+
+  /** Based in http://jsfiddle.net/AkPN2/5/ */
+  dragEnd(originElement, originNode) {
+    this.graph.endConnecting();
+
+    const mouseCirclePosition = this.generateCirclePositionByMouse(d3.mouse(this.graph.svgG.node()));
+
+    const destinationElement = this.getPortColidedWith(mouseCirclePosition);
+
+    if (destinationElement !== undefined && originElement !== destinationElement)
+      this.graph.createConnection(originElement.node(), destinationElement.node());
+  }
+
+  getPortColidedWith(mouseCirclePosition) {
+    for (let destination of this.graph.inputPorts.nodes()) {
+      const destinationElement = d3.select(destination);
+      const elementCirclePosition = this.generateCirclePositionByElement(destinationElement);
+
+      const hasColision = this.detectColision(elementCirclePosition, mouseCirclePosition);
+
+      if (hasColision)
+        return destinationElement;
+    }
+  }
+
+  generateCirclePositionByMouse(mouse) {
+    return this.generateCirclePosition(mouse[0], mouse[1], 1);
+  }
+
+  generateCirclePositionByElement(element) {
+    const position = PortDrawer.positionOfPortElement(element);
+    return this.generateCirclePosition(position.x, position.y, element.attr('r'));
+  }
+
+  generateCirclePosition(cx, cy, r) {
+    return { 'cx': parseInt(cx), 'cy': parseInt(cy), 'r': parseInt(r) };
+  }
+
+  detectColision(c1, c2) {
+    let distance = Math.sqrt(
+      Math.pow(c2.cx - c1.cx, 2) +
+      Math.pow(c2.cy - c1.cy, 2)
+    );
+
+    return distance < (c1.r + c2.r);
   }
 }

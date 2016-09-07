@@ -20,14 +20,12 @@ class GraphCreator {
     this.connections.map(connection => connection.graph = this);
 
     this.currentState = {
-      connectionPortElementOrigin: null,
       selectedEffect: null,
       selectedConnection: null
     };
 
     // FIXME - Deprecated
     this.state = {
-      justDragged: false,
       justScaleTransGraph: false,
       lastKeyDown: -1
     };
@@ -177,10 +175,6 @@ class GraphCreator {
   }
 
 
-  hasRequestCreationConnection() {
-    return this.currentState.connectionPortElementOrigin != null;
-  }
-
   createConnection(origin, destination) {
     const newConnection = new Edge({source: origin, target: destination});
     newConnection.graph = this;
@@ -235,8 +229,16 @@ class GraphCreator {
         .classed(Node.SELECTED_CLASS, false);
   }
 
+  startConnecting() {
+    this.svgG.classed('connecting', true);
+  }
+
+  endConnecting() {
+    this.svgG.classed('connecting', false);
+  }
+
   /********************************
-   *
+   * API methods
    ********************************/
    clear() {
      this.effects = [];
@@ -260,4 +262,11 @@ class GraphCreator {
 
      this.update();
    }
+
+  /********************************
+   * Gets
+   ********************************/
+  get inputPorts() {
+    return this.svgG.selectAll('.input-port');
+  }
 }

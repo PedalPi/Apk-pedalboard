@@ -28,8 +28,9 @@ class GraphDefinitions {
   static generateEdgeLine(node) {
     // Based in http://stackoverflow.com/a/34561659/1524997
     return node.append('svg:path')
+      .attr('id', 'edgeConnector')
       .datum([{x:0, y:0}, {x:0, y:0}])
-      .attr('class', 'link dragline hidden')
+      .attr('class', 'link dragline')
       .attr('d', 'M0,0L0,0')
       .style('marker-end', 'url(#mark-end-arrow)');
   }

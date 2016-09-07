@@ -1,10 +1,15 @@
-body{
+:root {
+  --selected: #ff00ff;
+  --hover: rgb(200, 238, 241);
+}
+
+body {
   margin: 0;
   padding: 0;
   overflow:hidden;
 }
 
-body{
+body {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -18,11 +23,6 @@ marker {
   fill: #333;
 }
 
-g.selected circle,
-g.selected:hover circle {
-  fill: #ff00ff;
-}
-
 path.link {
   fill: none;
   stroke: #333;
@@ -31,22 +31,29 @@ path.link {
 }
 
 path.link:hover {
-  stroke: rgb(94, 196, 204);
-}
-
-g.connect-node circle {
-  fill: #00ffff;
-}
-
-path.link.hidden{
-  stroke-width: 0;
+  stroke: var(--hover);
 }
 
 path.link.selected {
-  stroke: #ff00ff;
+  stroke: var(--selected);
 }
 
 /*******************************/
+#edgeConnector {
+  display: none;
+}
+
+.connecting #edgeConnector {
+  display: inherit;
+}
+
+/*******************************
+ * Effect
+ *******************************/
+.effect .back:hover {
+  fill: var(--hover);
+}
+
 .effect .back {
   fill: white;
   stroke: #333;
@@ -60,16 +67,35 @@ path.link.selected {
   y: -75;
 }
 
+.effect.selected .back {
+  fill: var(--selected);
+}
+
 .effect text {
   pointer-events: none;
 }
 
-.effect circle {
-  fill: #F6FBFF;
+/**************************
+ * Ports
+ **************************/
+.effect .input-port,
+.effect .output-port {
   stroke: #333;
   stroke-width: 2px;
 }
 
-.effect:hover circle {
+.effect .input-port {
+  fill: gray;
+}
+
+.effect .output-port {
+  fill: #F6FBFF;
+}
+
+.connecting .effect .input-port {
+  fill: red;
+}
+
+.connecting circle:hover {
   fill: rgb(200, 238, 241);
 }

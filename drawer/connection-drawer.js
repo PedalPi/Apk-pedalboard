@@ -20,6 +20,7 @@ class ConnectionDrawer {
     const container = node
       .append("path")
       .style('marker-end','url(#end-arrow)')
+      .attr("id", connection => Edge.generateId(connection))
       .classed("link", true)
       .attr("d", connection => this.resize(connection))
       .on("mousedown", function(connection) { self.mouseDown(d3.select(this), connection) })

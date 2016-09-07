@@ -26,22 +26,24 @@ class EffectDrawer {
 
       .on("mousedown", function(node) { self.mouseDown(d3.select(this), node) })
       .on("touchstart", function(node) { self.mouseDown(d3.select(this), node) })
-      .on("mouseover", function(node) { node.mouseOver(d3.select(this)); })
-      .on("mouseout", function(node) { node.mouseOut(d3.select(this)); })
 
       .call(this.generateDragBehavior());
 
     container.append("rect")
-      .attr('class', 'back');
+      .classed('back', true);
 
     const portsInput = container.append("g")
-      .attr('class', 'port input');
+      .classed('input-ports', true);
 
     const portsOuput = container.append("g")
-      .attr('class', 'port output');
+      .classed('output-ports', true);
 
-    new PortDrawerInput(this.graph, EffectDrawer.SIZE).drawIn(portsInput);
-    new PortDrawerOutput(this.graph, EffectDrawer.SIZE).drawIn(portsOuput);
+    new PortDrawerInput(this.graph, EffectDrawer.SIZE)
+      .drawIn(portsInput)
+      .classed('input-port', true);
+    new PortDrawerOutput(this.graph, EffectDrawer.SIZE)
+      .drawIn(portsOuput)
+      .classed('output-port', true);;
 
     container.each(function(d) {
       self.insertTitleLinebreaks(d3.select(this), d.title);
