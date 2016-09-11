@@ -8,6 +8,12 @@ class Pedalboard {
     this.effects = effects;
     this.connections = connections;
 
+    this.callback = {
+      onConnectionAdded: (_) => {},
+      onConnectionRemoved: (_) => {},
+      onEffectRemoved: (_) => {}
+    };
+
     this.selected = {
       effect: null,
       connection: null
@@ -177,11 +183,36 @@ class Pedalboard {
    }
 
    addEffect(x, y, data) {
-     data = {name: "port created", ports:{audio: {input:[{}, {}], output:[{}]}}}     
+     data = {name: "port created", ports:{audio: {input:[{}, {}], output:[{}]}}}
      const effect = new Effect(this.id++, x, y, data);
 
      this.effects.push(effect);
      this.update();
+   }
+
+   addConnection(effectSource, portSource, effectTarget, portTarget) {
+     const newEffectOutput = new Effect(0, 0, 0, effectSource);
+     const newEffectInput = new Effect(0, 0, 0, effectTarget);
+
+     const util = new ConnectionUtil(this);
+
+     const outputSourceElement = util.elementOfPort(newEffectOutput, portSource, 'output');
+     const inputTargetElement = util.elementOfPort(newEffectInput, portTarget, 'input');
+
+     this.createConnection(outputSourceElement, inputTargetElement)
+   }
+
+   // Private
+   createConnection(elementSource, elementTarget) {
+     const newConnection = new Connection({source: elementSource, target: elementTarget});
+
+     for (let connection of this.connections)
+       if (connection.source === newConnection.source && connection.target === newConnection.target)
+         return;
+
+     this.connections.push(newConnection);
+     this.update();
+     this.callback.onConnectionAdded(newConnection.details());
    }
 
    removeSelected() {
@@ -204,6 +235,7 @@ class Pedalboard {
   removeEffect(effect) {
     this.effects.splice(this.effects.indexOf(effect), 1);
     this.removeConnectionsOf(effect);
+    this.callback.onEffectRemoved(effect.data);
   }
 
   removeConnectionsOf(effect) {
@@ -226,6 +258,7 @@ class Pedalboard {
 
   removeConnection(connection) {
     this.connections.splice(this.connections.indexOf(connection), 1);
+    this.callback.onConnectionRemoved(connection.details());
   }
 
   /********************************
@@ -244,16 +277,17 @@ class Pedalboard {
   }
 
   /********************************
-   * Others
+   * Callback
    ********************************/
-  createConnection(elementSource, elementTarget) {
-    const newConnection = new Connection({source: elementSource, target: elementTarget});
+  set onConnectionAdded(callback) {
+    this.callback.onConnectionAdded = callback;
+  }
 
-    for (let connection of this.connections)
-      if (connection.source === newConnection.source && connection.target === newConnection.target)
-        return;
+  set onConnectionRemoved(callback) {
+    this.callback.onConnectionRemoved = callback;
+  }
 
-    this.connections.push(newConnection);
-    this.update();
+  set onEffectRemoved(callback) {
+    this.callback.onEffectRemoved = callback;
   }
 }
