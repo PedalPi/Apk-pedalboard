@@ -1,7 +1,7 @@
 class EffectDrawer {
-  constructor(graph) {
+  constructor(pedalboard) {
     EffectDrawer.SIZE = {width:100, height:150};
-    this.graph = graph;
+    this.pedalboard = pedalboard;
   }
 
   draw(elements) {
@@ -38,10 +38,10 @@ class EffectDrawer {
     const portsOuput = container.append("g")
       .classed('output-ports', true);
 
-    new PortDrawerInput(this.graph, EffectDrawer.SIZE)
+    new PortDrawerInput(this.pedalboard, EffectDrawer.SIZE)
       .drawIn(portsInput)
       .classed('input-port', true);
-    new PortDrawerOutput(this.graph, EffectDrawer.SIZE)
+    new PortDrawerOutput(this.pedalboard, EffectDrawer.SIZE)
       .drawIn(portsOuput)
       .classed('output-port', true);;
 
@@ -59,11 +59,11 @@ class EffectDrawer {
 
   drag(node) {
     node.dragmove(d3.event);
-    node.graph.update();
+    this.pedalboard.update();
   }
 
   mouseDown(element, node) {
-    node.graph.selectEffect(element, node);
+    this.pedalboard.selectEffect(element, node);
 
     d3.event.stopPropagation();
   }

@@ -1,10 +1,10 @@
 class PortDrawer {
-  constructor(graph, effectSize) {
+  constructor(pedalboard, effectSize) {
     PortDrawer.RADIUS = 20;
     PortDrawer.PADDING = 5;
 
     this.effectSize = effectSize;
-    this.graph = graph;
+    this.pedalboard = pedalboard;
   }
 
   drawIn(container) {
@@ -75,32 +75,32 @@ class PortDrawerOutput extends PortDrawer {
   }
 
   dragStart(element) {
-    this.graph.startConnecting();
+    this.pedalboard.startConnecting();
 
     const position = PortDrawer.positionOfPortElement(element);
-    this.graph.edgeConnector.drawToPoint(position);
+    this.pedalboard.edgeConnector.drawToPoint(position);
   }
 
   drag(element, port) {
     const elementPosition = PortDrawer.positionOfPortElement(element);
 
-    this.graph.edgeConnector.drawTo(elementPosition, this.graph.mousePosition);
+    this.pedalboard.edgeConnector.drawTo(elementPosition, this.pedalboard.mousePosition);
   }
 
   /** Based in http://jsfiddle.net/AkPN2/5/ */
   dragEnd(originElement, originNode) {
-    this.graph.endConnecting();
+    this.pedalboard.endConnecting();
 
-    const mouseCirclePosition = this.generateCirclePositionByMouse(this.graph.mousePosition);
+    const mouseCirclePosition = this.generateCirclePositionByMouse(this.pedalboard.mousePosition);
 
     const destinationElement = this.getPortColidedWith(mouseCirclePosition);
 
     if (destinationElement !== undefined && originElement !== destinationElement)
-      this.graph.createConnection(originElement.node(), destinationElement.node());
+      this.pedalboard.createConnection(originElement.node(), destinationElement.node());
   }
 
   getPortColidedWith(mouseCirclePosition) {
-    for (let destination of this.graph.inputPorts.nodes()) {
+    for (let destination of this.pedalboard.inputPorts.nodes()) {
       const destinationElement = d3.select(destination);
       const elementCirclePosition = this.generateCirclePositionByElement(destinationElement);
 

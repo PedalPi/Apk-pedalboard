@@ -43,34 +43,39 @@ const effect = {
   }
 };
 
-function teste(d3) {
+function windowSize() {
   var docEl = document.documentElement,
       bodyEl = document.getElementsByTagName('body')[0];
 
-  var width = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
-      height =  window.innerHeight|| docEl.clientHeight|| bodyEl.clientHeight;
+  return {
+    width: window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
+    height: window.innerHeight|| docEl.clientHeight|| bodyEl.clientHeight
+  }
+}
 
-  var xLoc = width/2 - 25,
+function initialize(d3) {
+  const size = windowSize();
+
+  var xLoc = size.width/2 - 25,
       yLoc = 100;
 
   // initial node data
-  var nodes = [new Effect(0, 100, 150, effect),
-               new Effect(1, xLoc, yLoc, effect),
-               new Effect(2, xLoc, yLoc + 200, effect)];
+  const effects = [
+    new Effect(0, 100, 150, effect),
+    new Effect(1, xLoc, yLoc, effect),
+    new Effect(2, xLoc, yLoc + 200, effect)
+  ];
 
-  var edges = [];//new Edge({source: nodes[1], target: nodes[0]})];
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", size.width)
+    .attr("height", size.height);
 
-  var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  var pedalboard = new Pedalboard(svg, effects, []);
+  pedalboard.update();
 
-  var graph = new GraphCreator(svg, nodes, edges);
-  graph.update();
-
-  document.querySelector("#add").onclick = () => graph.addEffect(200, 200);
-  document.querySelector("#remove").onclick = () => graph.removeSelected();
+  document.querySelector("#add").onclick = () => pedalboard.addEffect(200, 200);
+  document.querySelector("#remove").onclick = () => pedalboard.removeSelected();
 }
 
-window.onload = () => {
-  teste(window.d3);
-}
+window.onload = () => initialize(window.d3);

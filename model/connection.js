@@ -1,9 +1,7 @@
-class Edge {
+class Connection {
   constructor(data) {
     this.source = data.source;
     this.target = data.target;
-
-    this.graph = null;
   }
 
   static generateId(connection) {

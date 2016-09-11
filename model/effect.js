@@ -6,7 +6,6 @@ class Effect {
 
     this.data = data;
     this.title = data.name;
-    this.graph = null;
   }
 
   dragmove(event) {

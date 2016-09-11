@@ -1,4 +1,8 @@
 class ConnectionDrawer {
+  constructor(pedalboard) {
+    this.pedalboard = pedalboard;
+  }
+
   draw(elements, selectedConnection) {
     // update existing connections
     elements.style('marker-end', 'url(#end-arrow)')
@@ -20,7 +24,7 @@ class ConnectionDrawer {
     const container = node
       .append("path")
       .style('marker-end','url(#end-arrow)')
-      .attr("id", connection => Edge.generateId(connection))
+      .attr("id", connection => Connection.generateId(connection))
       .classed("link", true)
       .attr("d", connection => this.resize(connection))
       .on("mousedown", function(connection) { self.mouseDown(d3.select(this), connection) })
@@ -30,7 +34,7 @@ class ConnectionDrawer {
   }
 
   mouseDown(element, connection) {
-    connection.graph.selectConnection(element, connection);
+    this.pedalboard.selectConnection(element, connection);
 
     d3.event.stopPropagation();
   }

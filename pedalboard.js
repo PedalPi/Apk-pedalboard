@@ -1,21 +1,12 @@
 "use strict";
 
-class GraphCreator {
+class Pedalboard {
 
-  constructor(svg, effects = [], edges = []) {
-    this.consts = {
-      BACKSPACE_KEY: 8,
-      DELETE_KEY: 46,
-      ENTER_KEY: 13
-    }
-
+  constructor(svg, effects = [], connections = []) {
     this.id = effects.length;
 
     this.effects = effects;
-    this.connections = edges;
-
-    this.effects.map(effect => effect.graph = this);
-    this.connections.map(connection => connection.graph = this);
+    this.connections = connections;
 
     this.selected = {
       effect: null,
@@ -44,8 +35,7 @@ class GraphCreator {
     const svgG = svg.append("g")
         .attr("id", "pedalboard");
 
-    this.dragLine = GraphDefinitions.generateEdgeLine(svgG);
-    this.edgeConnector = new EdgeConnector(this, this.dragLine);
+    this.edgeConnector = new EdgeConnector(svgG);
 
     this.connectionsElements = svgG.append("g").attr('id', 'edges').selectAll("g");
     this.effectsElements = svgG.append("g").attr('id', 'nodes').selectAll("g");
@@ -69,11 +59,14 @@ class GraphCreator {
     if (this.state.lastKeyDown !== -1)
       return;
 
+    const BACKSPACE_KEY = 8;
+    const DELETE_KEY = 46;
+
     this.state.lastKeyDown = d3.event.keyCode;
 
     switch(d3.event.keyCode) {
-      case this.consts.BACKSPACE_KEY:
-      case this.consts.DELETE_KEY:
+      case BACKSPACE_KEY:
+      case DELETE_KEY:
         d3.event.preventDefault();
         this.removeSelected();
         this.update();
@@ -105,15 +98,15 @@ class GraphCreator {
    * Update
    *************************************/
   update() {
-    this.updateEdges();
+    this.updateConnections();
     this.updateEffects();
   }
 
-  updateEdges() {
+  updateConnections() {
     const elements = this.connectionsElements.data(this.connections);
     const connection = this.selected.connection;
 
-    this.connectionsElements = new ConnectionDrawer().draw(elements, connection);
+    this.connectionsElements = new ConnectionDrawer(this).draw(elements, connection);
   }
 
   updateEffects() {
@@ -183,9 +176,9 @@ class GraphCreator {
      this.update();
    }
 
-   addEffect(x, y) {
-     const effect = new Effect(this.id++, x, y, {name: "port created", ports:{audio: {input:[{}, {}], output:[{}]}}});
-     effect.graph = this;
+   addEffect(x, y, data) {
+     data = {name: "port created", ports:{audio: {input:[{}, {}], output:[{}]}}}     
+     const effect = new Effect(this.id++, x, y, data);
 
      this.effects.push(effect);
      this.update();
@@ -254,8 +247,7 @@ class GraphCreator {
    * Others
    ********************************/
   createConnection(elementSource, elementTarget) {
-    const newConnection = new Edge({source: elementSource, target: elementTarget});
-    newConnection.graph = this;
+    const newConnection = new Connection({source: elementSource, target: elementTarget});
 
     for (let connection of this.connections)
       if (connection.source === newConnection.source && connection.target === newConnection.target)

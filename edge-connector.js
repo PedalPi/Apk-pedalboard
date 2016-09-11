@@ -1,7 +1,6 @@
 class EdgeConnector {
-  constructor(graph, line) {
-    this.graph = graph;
-    this.line = line;
+  constructor(svgGroup) {
+    this.line = GraphDefinitions.generateEdgeLine(svgGroup);
   }
 
   drawToPoint(point) {
